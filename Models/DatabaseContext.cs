@@ -13,6 +13,8 @@ public partial class DatabaseContext : DbContext
     {
     }
 
+    public virtual DbSet<ApiKey> ApiKeys { get; set; }
+
     public virtual DbSet<Brand> Brands { get; set; }
 
     public virtual DbSet<FuelType> FuelTypes { get; set; }
@@ -25,6 +27,14 @@ public partial class DatabaseContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<ApiKey>(entity =>
+        {
+            entity.HasKey(e => e.APIKeyID).HasName("PK__APIKey__C5971C76560300BD");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.KeyValue).IsFixedLength();
+        });
+
         modelBuilder.Entity<Brand>(entity =>
         {
             entity.HasKey(e => e.BrandID).HasName("PK__Brand__DAD4F3BEC11D571C");

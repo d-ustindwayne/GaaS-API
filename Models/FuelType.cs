@@ -15,9 +15,8 @@ public partial class FuelType
     [Column("FuelID")]
     public int FuelID { get; set; }
 
-    [Required]
     [Column("FuelType")]
-    [StringLength(10)]
+    [StringLength(50)]
     [Unicode(false)]
     public string FuelTypeName { get; set; }
 

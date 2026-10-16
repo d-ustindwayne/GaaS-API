@@ -19,6 +19,10 @@
    "T4TemplatePath": null,
    "Tables": [
       {
+         "Name": "[dbo].[APIKey]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Brand]",
          "ObjectType": 0
       },
