@@ -87,15 +87,13 @@ public class CRUD
         if (!await _dbContext.Brands.AnyAsync(b => b.BrandID == brand))
             return new BadRequestObjectResult("Brand does not exist.");
 
-        // Save the GeoLocation first so its real (DB-generated) ID is available for the Station FK
+        // Create a new GeoLocation object and add it to the database
         var geoLocation = new GeoLocation
         {
             AddressString = address,
             Latitude = latitude,
             Longitude = longitude
         };
-
-        // Save the GeoLocation to the database
         _dbContext.GeoLocations.Add(geoLocation);
         await _dbContext.SaveChangesAsync();
 

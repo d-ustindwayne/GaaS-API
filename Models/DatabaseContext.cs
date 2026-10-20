@@ -22,6 +22,8 @@ public partial class DatabaseContext : DbContext
     public virtual DbSet<GeoLocation> GeoLocations { get; set; }
 
     public virtual DbSet<Price> Prices { get; set; }
+    
+    public virtual DbSet<PriceChangeLog> PriceChangeLogs { get; set; }
 
     public virtual DbSet<Station> Stations { get; set; }
 

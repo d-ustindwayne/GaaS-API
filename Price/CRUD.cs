@@ -83,25 +83,34 @@ public class CRUD
         if (!await _dbContext.FuelTypes.AnyAsync(f => f.FuelID == fuelType))
             return new BadRequestObjectResult("FuelType does not exist.");
 
-        // Create a new Price entity and add it to the database
-        _dbContext.Prices.Add(new Models.Price
+        // Create a new Price object and add it to the database
+        var newPrice = new Models.Price
         {
             Station = station,
             FuelType = fuelType,
             PriceValue = priceValue
-        });
+        };
+
+        _dbContext.Prices.Add(newPrice);
         await _dbContext.SaveChangesAsync();
 
-        var price = _dbContext.Prices
+        // Assuming you have the newly created price object from your creation logic
+        var price = await _dbContext.Prices
             .Include(p => p.StationNavigation)
+            .ThenInclude(s => s.BrandNavigation)
             .Include(p => p.FuelTypeNavigation)
-            .FirstOrDefault(p => p.PriceID == _dbContext.Prices.First().PriceID);
-        stationName = price.StationNavigation?.BrandNavigation?.BrandName ?? station.ToString();
-        fuelTypeName = price.FuelTypeNavigation?.FuelTypeName ?? fuelType.ToString();
+            .FirstOrDefaultAsync(p => p.PriceID == newPrice.PriceID);
+
+        if (price == null) return new BadRequestObjectResult(new { message = "Price not found" });
+
+        string brand = price?.StationNavigation?.BrandNavigation?.BrandName ?? station.ToString();
+        string branch = price?.StationNavigation?.Branch ?? station.ToString();
+        stationName = $"{brand} {branch}";
+        fuelTypeName = price?.FuelTypeNavigation?.FuelTypeName ?? fuelType.ToString();
 
         return new OkObjectResult(new
         {
-            message = $"New price data of {price.PriceValue} for station {price.StationNavigation?.BrandNavigation?.BrandName} {price.StationNavigation?.Branch} has been created"
+            message = $"New price data of {price.PriceValue} for station {stationName} and fuel type {fuelTypeName} has been created"
         });
     }
 
@@ -166,7 +175,7 @@ public class CRUD
         if (priceValue.HasValue) price.PriceValue = priceValue.Value;
 
         await _dbContext.SaveChangesAsync();
-        return new OkObjectResult("OK");
+        return new OkObjectResult(new { message = $"Price ID of {price.PriceID} for station {price.StationNavigation?.Brand} {price.StationNavigation?.Branch} and fuel type {price.FuelTypeNavigation?.FuelTypeName} has been updated" });
     }
 
     [Function("PriceDelete")]
@@ -209,7 +218,7 @@ public class CRUD
         _dbContext.Prices.Remove(price);
         await _dbContext.SaveChangesAsync();
 
-        return new OkObjectResult("OK");
+        return new OkObjectResult(new { message = $"Price ID of {price.PriceID} for station {price.StationNavigation?.Brand} {price.StationNavigation?.Branch} and fuel type {price.FuelTypeNavigation?.FuelTypeName} has been deleted" });
     }
 }
 
