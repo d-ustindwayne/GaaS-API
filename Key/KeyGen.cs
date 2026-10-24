@@ -76,7 +76,7 @@ public class KeyGen
                 KeyValue = apiKey,
                 PermissionLevel = Permission != 0 ? true : false
             };
-        await _dbContext.ApiKeys.AddAsync(generatedAPIKey);
+        await _dbContext.ApiKeys.AddAsync(HashedKey);
         await _dbContext.SaveChangesAsync();
         return new OkObjectResult(new { generatedAPIKey, message = "Copy or store the API Key now as you won't be able to see it again."});
     }
