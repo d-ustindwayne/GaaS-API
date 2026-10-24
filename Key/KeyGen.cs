@@ -68,17 +68,17 @@ public class KeyGen
 
             string suffix = Permission == 1 ? "1-as0x" : "0-as00";
             apiKey = $"ga_{randomText}-{suffix}";
-            HashedKey = Convert.ToHexString(SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(apiKey)));
+            HashedKey = (string) Convert.ToHexString(SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(apiKey)));
         } while (await _dbContext.ApiKeys.AnyAsync(k => k.KeyValue == HashedKey));
         ApiKey generatedAPIKey = new ApiKey
             { 
                 KeyName = KeyName,
-                KeyValue = apiKey,
+                KeyValue = HashedKey, // Store the hashed key in the database
                 PermissionLevel = Permission != 0 ? true : false
             };
-        await _dbContext.ApiKeys.AddAsync(HashedKey);
+        await _dbContext.ApiKeys.AddAsync(generatedAPIKey);
         await _dbContext.SaveChangesAsync();
-        return new OkObjectResult(new { generatedAPIKey, message = "Copy or store the API Key now as you won't be able to see it again."});
+        return new OkObjectResult(new { apiKey, message = "Copy or store the API Key now as you won't be able to see it again." });
     }
 }
 
