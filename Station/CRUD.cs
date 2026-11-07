@@ -25,18 +25,6 @@ public class CRUD
         _validateKey = new ValidateKey(dbContext);
     }
 
-    // Created this for validating the role within the API key. Not in Key since It needs to return a Task<IActionResult> for the function to return the proper response
-    private async Task<IActionResult?> ValidateAdminAccessAsync(string key)
-    {
-        if (string.IsNullOrWhiteSpace(key)) return new BadRequestObjectResult("API Key is required");
-        if (!_validateKey.IsValidKey(key)) return new UnauthorizedObjectResult("Invalid API Key");
-
-        await _dbContext.ApiKeys.Where(k => k.KeyValue == key).ExecuteUpdateAsync(setters => setters.SetProperty(k => k.KeyCallCount, k => k.KeyCallCount + 1));
-
-        if (!_validateKey.GetPermissionLevel(key)) return new ObjectResult("Admin permission required") { StatusCode = StatusCodes.Status403Forbidden };
-        return null;
-    }
-
     [Function("StationCreate")]
     async public Task<IActionResult> Create([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = _rootpath + "/create")] HttpRequest req)
     {
@@ -76,7 +64,7 @@ public class CRUD
         }
 
         // Validate the API key and admin access
-        var accessError = await ValidateAdminAccessAsync(apiKey);
+        var accessError = await _validateKey.ValidateAdminAccessAsync(apiKey);
         if (accessError != null) return accessError;
 
         if (string.IsNullOrWhiteSpace(address) || latitude == 0m || longitude == 0m || brand == 0 || string.IsNullOrWhiteSpace(branch))
@@ -151,7 +139,7 @@ public class CRUD
         }
 
         // Validate the API key and admin access
-        var accessError = await ValidateAdminAccessAsync(apiKey);
+        var accessError = await _validateKey.ValidateAdminAccessAsync(apiKey);
         if (accessError != null) return accessError;
 
         if (stationID <= 0) return new BadRequestObjectResult("A valid StationID is required");
@@ -215,7 +203,7 @@ public class CRUD
         }
 
         // Validate the API key and admin access
-        var accessError = await ValidateAdminAccessAsync(apiKey);
+        var accessError = await _validateKey.ValidateAdminAccessAsync(apiKey);
         if (accessError != null) return accessError;
 
         if (stationID <= 0) return new BadRequestObjectResult("A valid StationID is required");

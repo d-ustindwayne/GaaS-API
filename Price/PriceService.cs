@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace GaaS_API.Price;
 
@@ -69,7 +71,7 @@ public class PriceService
         if (!_validateKey.IsValidKey(apiKey)) return new UnauthorizedObjectResult("Invalid API apiKey");
 
         // Add 1 to KeyCallCount for the API key used in this request
-        await _dbContext.ApiKeys.Where(k => k.KeyValue == apiKey).ExecuteUpdateAsync(setters => setters.SetProperty(k => k.KeyCallCount, k => k.KeyCallCount + 1));
+        await _dbContext.ApiKeys.Where(k => k.KeyValue == Convert.ToHexString(SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(apiKey)))).ExecuteUpdateAsync(setters => setters.SetProperty(k => k.KeyCallCount, k => k.KeyCallCount + 1));
 
         isAdmin = _validateKey.GetPermissionLevel(apiKey);
         IQueryable<PriceResponse> query;
@@ -97,13 +99,15 @@ public class PriceService
                      .ToAsyncEnumerable()
                      .ToListAsync();
             }
+
+            if (stationIDList.Count == 0) return new NotFoundObjectResult("No result found. Please try a different search");
         }
 
         // If the fuel type query is not empty, attempt to parse it as an integer. If parsing fails, perform a database search for matching fuel type names
         if (!string.IsNullOrWhiteSpace(fuelTypeQuery))
         {
             string[] numberFuels = { "91", "95", "98" };
-            if (int.TryParse(fuelTypeQuery, out int fuelValue) && !numberFuels.All(a => fuelTypeQuery.Contains(a)))
+            if (int.TryParse(fuelTypeQuery, out int fuelValue) && !numberFuels.Any(a => fuelTypeQuery.Contains(a)))
             {
                 fuelTypeIDList.Add(fuelValue);
             }
@@ -115,6 +119,8 @@ public class PriceService
                      select f.FuelID)
                 .ToListAsync();
             }
+
+            if (fuelTypeIDList.Count == 0) return new NotFoundObjectResult("No result found. Please try a different search");
         }
 
         // Validate the price range parameters

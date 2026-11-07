@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace GaaS_API.Station;
 
@@ -66,7 +68,7 @@ public class StationService
         if (!_validateKey.IsValidKey(apiKey)) return new UnauthorizedObjectResult("Invalid API apiKey");
 
         // Add 1 to KeyCallCount for the API key used in this request
-        await _dbContext.ApiKeys.Where(k => k.KeyValue == apiKey).ExecuteUpdateAsync(setters => setters.SetProperty(k => k.KeyCallCount, k => k.KeyCallCount + 1));
+        await _dbContext.ApiKeys.Where(k => k.KeyValue == Convert.ToHexString(SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(apiKey)))).ExecuteUpdateAsync(setters => setters.SetProperty(k => k.KeyCallCount, k => k.KeyCallCount + 1));
 
         isAdmin = _validateKey.GetPermissionLevel(apiKey);
         IQueryable<StationResponse> query;

@@ -3,6 +3,7 @@
     "GaaS_API": {
       "commandName": "Project",
       "commandLineArgs": "--port 7230",
+      "launchUrl": "https://localhost:7230",
       "launchBrowser": false
     }
   }

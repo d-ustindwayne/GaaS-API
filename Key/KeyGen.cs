@@ -68,7 +68,7 @@ public class KeyGen
 
             string suffix = Permission == 1 ? "1-as0x" : "0-as00";
             apiKey = $"ga_{randomText}-{suffix}";
-            HashedKey = (string) Convert.ToHexString(SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(apiKey)));
+            HashedKey = Convert.ToHexString(SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(apiKey)));
         } while (await _dbContext.ApiKeys.AnyAsync(k => k.KeyValue == HashedKey));
         ApiKey generatedAPIKey = new ApiKey
             { 
