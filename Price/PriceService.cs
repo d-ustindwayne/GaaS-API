@@ -47,7 +47,7 @@ public class PriceService
             rangeMin = decimal.TryParse(req.Query["min"], out decimal rangeMinValue) ? rangeMinValue : 1m;
             rangeMax = decimal.TryParse(req.Query["max"], out decimal rangeMaxValue) ? rangeMaxValue : 10.00m;
             quantity = int.TryParse(req.Query["quantity"].ToString(), out int quantityValue) ? quantityValue : 0;
-            apiKey = req.Query["key"].ToString() ?? string.Empty;
+            apiKey = req.Query["apiKey"].ToString() ?? string.Empty;
         }
         else if (req.Method == "POST")
         {
