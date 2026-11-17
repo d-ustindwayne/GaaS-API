@@ -39,4 +39,4 @@ The MVC application will consume the API through HTTP requests rather than direc
 
 ## License
 
-No license has been specified for this repository.
+Copyright 2026 Diaz, Grumal, Sanglap. Licensed under the Apache License, Version 2.0.
